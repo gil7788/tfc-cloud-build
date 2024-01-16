@@ -29,3 +29,34 @@ terraform plan
 terraform apply
 terraform destroy
 ```
+
+## Setup
+This section explains how to set up `terraform` config in this repository with Google Cloud Platform (GCP).
+### Setup Github
+Create a Github repositroy with the following branches:
+- `master`
+- `prod`
+
+### Setup GCP
+- Enable Google Cloud API's
+    - `gcloud config set project <GCP-project_id>`
+    - `gcloud services enable cloudbuild.googleapis.com compute.googleapis.com`
+- Create a Cloud Bucket
+    - `CLOUDBUILD_SA="$(gcloud projects describe $PROJECT_ID \
+    --format 'value(projectNumber)')@cloudbuild.gserviceaccount.com"`
+
+    - `gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member serviceAccount:$CLOUDBUILD_SA --role roles/editor`
+    Where $PROJECT_ID is GCP project id.`
+- Connect Cloud Build with Github Repository
+    - Go to the GitHub Marketplace page for the Cloud Build app: [Link](https://github.com/marketplace/google-cloud-build)
+
+### Configure Terraform Files
+- Make sure that project name is set correctly in the following files:
+    -   `environments/dev/backend.tf`
+    -    `environments/dev/terraform.tfvars`
+    -    `environments/prod/backend.tf`
+    -    `environments/prod/terraform.tfvars`
+
+## References
+Terrafrom managing infrastructure as code: [Link](https://cloud.google.com/docs/terraform/resource-management/managing-infrastructure-as-code)
