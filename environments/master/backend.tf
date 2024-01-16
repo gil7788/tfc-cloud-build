@@ -16,6 +16,6 @@
 terraform {
   backend "gcs" {
     bucket = "tfc-cloud-build-tfstate"
-    prefix = "env/dev"
+    prefix = "env/master"
   }
 }
