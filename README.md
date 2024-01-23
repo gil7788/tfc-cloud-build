@@ -51,6 +51,61 @@ Create a Github repositroy with the following branches:
 - Connect Cloud Build with Github Repository
     - Go to the GitHub Marketplace page for the Cloud Build app: [Link](https://github.com/marketplace/google-cloud-build)
 
+### Cloud Build Setup Instructions
+- 1. Enable Cloud Build and Artifact Registry APIs
+
+Execute the following command to enable necessary services in your GCP project:
+
+```bash
+gcloud services enable \
+    cloudbuild.googleapis.com \
+    artifactregistry.googleapis.com \
+    --project=<PROJECT-ID>
+```
+
+- 2. Create a Shell Script (run.sh)
+Create a script named run.sh that will define your build or deployment commands.
+
+- 3. Create a Dockerfile
+Prepare a Dockerfile to define the steps for creating your Docker image.
+
+- 4. Create a New Docker Repository
+Use this command to create a Docker repository in the Artifact Registry:
+```bash
+gcloud artifacts repositories create quickstart-docker-repo \
+    --repository-format=docker \
+    --location=us-west2 \
+    --description="Docker repository"
+```
+
+- 5. Verify the Repository Creation
+Ensure your repository has been successfully created:
+
+```bash
+gcloud artifacts repositories list
+```
+
+- 6. Create cloudbuild.yaml
+Prepare your cloudbuild.yaml file with the necessary build steps:
+```yaml
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    script: |
+      docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1 .
+    automapSubstitutions: true
+images:
+  - 'us-west2-docker.pkg.dev/<PROJECT-ID>/quickstart-docker-repo/quickstart-image:tag1'
+```
+
+- 7. Submit the Build
+Trigger the Cloud Build using the following command:
+```bash
+gcloud builds submit \
+    --region=us-west2 --config \
+    cloudbuild.yaml
+```
+These steps will guide you through setting up a Cloud Build process in GCP, including creating a Docker image and storing it in the Artifact Registry. Remember to replace `<PROJECT-ID>` with your actual GCP project ID.
+
 ### Configure Terraform Files
 - Make sure that project name is set correctly in the following files:
     -   `environments/dev/backend.tf`
