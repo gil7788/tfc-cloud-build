@@ -106,6 +106,8 @@ gcloud builds submit \
 ```
 These steps will guide you through setting up a Cloud Build process in GCP, including creating a Docker image and storing it in the Artifact Registry. Remember to replace `<PROJECT-ID>` with your actual GCP project ID.
 
+- 8. Ensure running user has Cloud Run Admin IAM Permissions
+
 ### Configure Terraform Files
 - Make sure that project name is set correctly in the following files:
     -   `environments/dev/backend.tf`
