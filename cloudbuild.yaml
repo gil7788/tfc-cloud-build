@@ -1,6 +1,26 @@
 steps:
-  # Docker build and push
+  # Docker build
   - name: 'gcr.io/cloud-builders/docker'
-    script: |
-      docker build -t us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:tag1 .
-    automapSubstitutions: true
+    args: ['build', '-t', 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA', '.']
+
+  # Docker push
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'my-service'  # Replace with your Cloud Run service name
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/my-app:$SHORT_SHA'
+      - '--region'
+      - 'us-central1'  # Replace with your desired region
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'  # Remove this line if authentication is required
+
+images:
+  - 'gcr.io/$PROJECT_ID/my-app:$SHORT_SHA'
