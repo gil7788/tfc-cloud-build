@@ -1,42 +1,42 @@
 substitutions:
-  _GCP_REGION: 'us-west2'
-  _PROJECT_ID: 'tfc-cloud-build'
-  _GCP_CONTAINER_REGISTRY_REPOSITORY_NAME: 'quickstart-docker-repo'
-  _DOCKER_IMAGE_NAME: 'quickstart-image'
-  _GCP_CLOUD_RUN_SERVICE_NAME: 'my-service'
+  GCP_REGION: 'us-west2'
+  PROJECT_ID: 'tfc-cloud-build'
+  GCP_CONTAINER_REGISTRY_REPOSITORY_NAME: 'quickstart-docker-repo'
+  DOCKER_IMAGE_NAME: 'quickstart-image'
+  GCP_CLOUD_RUN_SERVICE_NAME: 'my-service'
 
 steps:
   # Docker build
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
-      - '--build-arg=GCP_REGION=$_GCP_REGION'
-      - '--build-arg=PROJECT_ID=$_PROJECT_ID'
-      - '--build-arg=GCP_CONTAINER_REGISTRY_REPOSITORY_NAME=$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME'
-      - '--build-arg=DOCKER_IMAGE_NAME=$_DOCKER_IMAGE_NAME'
+      - '--build-arg=GCP_REGION=$GCP_REGION'
+      - '--build-arg=PROJECT_ID=$PROJECT_ID'
+      - '--build-arg=GCP_CONTAINER_REGISTRY_REPOSITORY_NAME=$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME'
+      - '--build-arg=DOCKER_IMAGE_NAME=$DOCKER_IMAGE_NAME'
       - '-t'
-      - '$_GCP_REGION-docker.pkg.dev/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
+      - '$GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA'
       - '.'
 
   # Docker push
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '$_GCP_REGION-docker.pkg.dev/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
+      - '$GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA'
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args:
       - 'run'
       - 'deploy'
-      - '$_GCP_CLOUD_RUN_SERVICE_NAME'
+      - '$GCP_CLOUD_RUN_SERVICE_NAME'
       - '--image'
-      - 'gcr.io/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
+      - 'gcr.io/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA'
       - '--region'
-      - '$_GCP_REGION'
+      - '$GCP_REGION'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
 
 images:
-  - 'gcr.io/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA'
