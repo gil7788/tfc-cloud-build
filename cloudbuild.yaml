@@ -1,26 +1,58 @@
+substitutions:
+  _GCP_REGION: 'us-west2'
+  _PROJECT_ID: 'tfc-cloud-build'
+  _GCP_CONTAINER_REGISTRY_REPOSITORY_NAME: 'quickstart-docker-repo'
+  _DOCKER_IMAGE_NAME: 'quickstart-image'
+  _GCP_CLOUD_RUN_SERVICE_NAME: 'my-service'
+
 steps:
+  # Step to parse JSON and export as environment variables
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        $(jq -r 'to_entries|map("export \(.key)=\(.value|tostring)")|.[]' config.json)
+        # Optionally, you can echo the variables here for debugging
+        # echo "GCP_REGION: $GCP_REGION"
+        # echo "PROJECT_ID: $PROJECT_ID"
+        # ...
+
   # Docker build
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA', '.']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        $(jq -r 'to_entries|map("export \(.key)=\(.value|tostring)")|.[]' config.json)
+        docker build \
+          --build-arg GCP_REGION=$GCP_REGION \
+          --build-arg PROJECT_ID=$PROJECT_ID \
+          --build-arg GCP_CONTAINER_REGISTRY_REPOSITORY_NAME=$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME \
+          --build-arg DOCKER_IMAGE_NAME=$DOCKER_IMAGE_NAME \
+          -t $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA .
 
   # Docker push
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        $(jq -r 'to_entries|map("export \(.key)=\(.value|tostring)")|.[]' config.json)
+        docker push $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+    entrypoint: 'bash'
     args:
-      - 'run'
-      - 'deploy'
-      - 'my-service'  # Replace with your Cloud Run service name
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/my-app:$SHORT_SHA'
-      - '--region'
-      - 'us-central1'  # Replace with your desired region
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'  # Remove this line if authentication is required
+      - '-c'
+      - |
+        $(jq -r 'to_entries|map("export \(.key)=\(.value|tostring)")|.[]' config.json)
+        gcloud run deploy $GCP_CLOUD_RUN_SERVICE_NAME \
+          --image gcr.io/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA \
+          --region $GCP_REGION \
+          --platform managed \
+          --allow-unauthenticated
 
 images:
-  - 'gcr.io/$PROJECT_ID/my-app:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA'
