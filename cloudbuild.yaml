@@ -1,26 +1,34 @@
 steps:
   # Docker build
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA', '.']
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        . ./environments/config.sh
+        docker build -t $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA .
 
   # Docker push
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-west2-docker.pkg.dev/$PROJECT_ID/quickstart-docker-repo/quickstart-image:$SHORT_SHA']
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        . ./environments/config.sh
+        docker push $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+    entrypoint: 'sh'
     args:
-      - 'run'
-      - 'deploy'
-      - 'my-service'  # Replace with your Cloud Run service name
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/my-app:$SHORT_SHA'
-      - '--region'
-      - 'us-central1'  # Replace with your desired region
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'  # Remove this line if authentication is required
+      - '-c'
+      - |
+        . ./environments/config.sh
+        gcloud run deploy $GCP_CLOUD_RUN_SERVICE_NAME \
+        --image=gcr.io/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA \
+        --region=$GCP_REGION \
+        --platform=managed \
+        --allow-unauthenticated
 
 images:
-  - 'gcr.io/$PROJECT_ID/my-app:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/$GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$DOCKER_IMAGE_NAME:$SHORT_SHA'
