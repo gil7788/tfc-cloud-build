@@ -1,9 +1,7 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
-
 # Source the config.sh file to load variables
-source ./config.sh
+source ./environments/config.sh
 
 # Manually set the required substitutions from the sourced variables
 substitutions=(
@@ -17,5 +15,10 @@ substitutions=(
 # Join the substitutions array into a comma-separated string
 substitution_str=$(IFS=, ; echo "${substitutions[*]}")
 
+echo "Generated Substitutions: $substitution_str"
+
 # Trigger Cloud Build with dynamic substitutions
-gcloud builds submit --config ./tfc_cloudbuild.yaml --substitutions=$substitution_str
+gcloud builds submit --config ./environments/tfc_cloudbuild.yaml --substitutions=$substitution_str
+
+
+echo "Cloud Build triggered with dynamic substitutions."
