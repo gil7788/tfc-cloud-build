@@ -1,0 +1,43 @@
+# Current set of substitutions is temporary and will be replaced with the real values during the build process, fed by config,sh and generate_substitutions.sh scripts.
+substitutions:
+  _GCP_REGION: '_GCP_REGION is not set'
+  _PROJECT_ID: '_PROJECT_ID is not set'
+  _GCP_CONTAINER_REGISTRY_REPOSITORY_NAME: '_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME is not set'
+  _DOCKER_IMAGE_NAME: '_DOCKER_IMAGE_NAME is not set'
+  _GCP_CLOUD_RUN_SERVICE_NAME: '_GCP_CLOUD_RUN_SERVICE_NAME is not set'
+
+steps:
+  # Docker build
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg=GCP_REGION=$_GCP_REGION'
+      - '--build-arg=PROJECT_ID=$_PROJECT_ID'
+      - '--build-arg=GCP_CONTAINER_REGISTRY_REPOSITORY_NAME=$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME'
+      - '--build-arg=DOCKER_IMAGE_NAME=$_DOCKER_IMAGE_NAME'
+      - '-t'
+      - '$_GCP_REGION-docker.pkg.dev/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
+      - '.'
+
+  # Docker push
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '$_GCP_REGION-docker.pkg.dev/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_GCP_CLOUD_RUN_SERVICE_NAME'
+      - '--image'
+      - 'gcr.io/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
+      - '--region'
+      - '$_GCP_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
