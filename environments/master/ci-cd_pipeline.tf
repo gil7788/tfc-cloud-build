@@ -1,6 +1,6 @@
 resource "null_resource" "create_user_service" {
   provisioner "local-exec" {
-    command = "bash ./environments/create_user_services.sh"
+    command = "bash ../create_user_services.sh"
   }
 
   triggers = {
@@ -10,7 +10,7 @@ resource "null_resource" "create_user_service" {
 
 resource "null_resource" "generate_substitutions" {
   provisioner "local-exec" {
-    command = "bash ./environments/generate_substitutions.sh"
+    command = "bash ../generate_substitutions.sh"
   }
 
   triggers = {
@@ -22,7 +22,7 @@ resource "null_resource" "generate_substitutions" {
 
 resource "null_resource" "run_cloudbuild" {
   provisioner "local-exec" {
-    command = "gcloud builds submit --config tfc_cloudbuild.yaml ."
+    command = "gcloud builds submit --config ../tfc_cloudbuild.yaml ."
   }
 
   triggers = {
