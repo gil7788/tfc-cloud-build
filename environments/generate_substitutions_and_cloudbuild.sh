@@ -18,7 +18,7 @@ substitution_str=$(IFS=, ; echo "${substitutions[*]}")
 echo "Generated Substitutions: $substitution_str"
 
 # Trigger Cloud Build with dynamic substitutions
-gcloud builds submit --config ./environments/tfc_cloudbuild.yaml --substitutions=$substitution_str
+gcloud builds submit --config ./environments/cloudbuild.yaml --substitutions=$substitution_str
 
 
 echo "Cloud Build triggered with dynamic substitutions."

@@ -17,7 +17,7 @@ steps:
       - '--build-arg=DOCKER_IMAGE_NAME=$_DOCKER_IMAGE_NAME'
       - '-t'
       - '$_GCP_REGION-docker.pkg.dev/$_PROJECT_ID/$_GCP_CONTAINER_REGISTRY_REPOSITORY_NAME/$_DOCKER_IMAGE_NAME:$SHORT_SHA'
-      - '.'
+      - '/app'
 
   # Docker push
   - name: 'gcr.io/cloud-builders/docker'
