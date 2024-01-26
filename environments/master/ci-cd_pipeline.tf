@@ -8,9 +8,9 @@ resource "null_resource" "create_user_service" {
   }
 }
 
-resource "null_resource" "generate_substitutions" {
+resource "null_resource" "generate_substitutions_and_cloudbuilds" {
   provisioner "local-exec" {
-    command = "bash ../generate_substitutions.sh"
+    command = "bash ../generate_substitutions_and_cloudbuild.sh"
   }
 
   triggers = {
@@ -18,16 +18,4 @@ resource "null_resource" "generate_substitutions" {
   }
 
   depends_on = [null_resource.create_user_service]
-}
-
-resource "null_resource" "run_cloudbuild" {
-  provisioner "local-exec" {
-    command = "gcloud builds submit --config ../tfc_cloudbuild.yaml ."
-  }
-
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-
-  depends_on = [null_resource.generate_substitutions]
 }
