@@ -2,11 +2,11 @@
 echo "Hello, world! The time is $(date)."
 
 # Test environment variables
-source ./environments/config.sh
+source ../environments/config.sh
 
 # Iterate through and print all environment variables
-for var in $(compgen -A variable); do
-  echo "$var=${!var}"
+printenv | while read -r line; do
+  echo "$line"
 done
 
 echo "Installing darkhttpd..."
@@ -24,4 +24,4 @@ sleep 10
 # Terminate the darkhttpd server after 10 seconds
 killall darkhttpd
 
-echo "Files served."
+echo "Files served!"
